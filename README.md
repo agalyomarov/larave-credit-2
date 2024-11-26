@@ -42,6 +42,9 @@
 
    ```
    http://localhost:8000
+   http://localhost:8000/docs/api
+   http://localhost:8000/docs/api.json
+
    ```
 
    Контейнеры будут слушать порт 8000 на вашей машине.
