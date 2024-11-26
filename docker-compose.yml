@@ -1,0 +1,49 @@
+services:
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3316:3306"
+    environment:
+      - MYSQL_DATABASE=laravel_db
+      - MYSQL_USER=laravel
+      - MYSQL_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=rootpassword
+    volumes:
+      - ~/.docker/data/mysql:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/my.cnf
+    user: 999:999
+    networks:
+      - mynetwork
+    command: --bind-address=0.0.0.0
+
+  php:
+    build:
+      dockerfile: ./php/Dockerfile
+    image: larave-app:1.0
+    depends_on:
+      - mysql
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  nginx:
+    image: "nginx:latest"
+    ports:
+      - "8000:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./src:/var/www/html
+    depends_on:
+      - php
+    restart: on-failure
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
